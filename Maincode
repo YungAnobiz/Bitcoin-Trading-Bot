@@ -1,0 +1,46 @@
+import ccxt
+import time
+
+# Initialize exchange and set API keys
+exchange = ccxt.bitmex({
+    'apiKey': 'YOUR_API_KEY',
+    'secret': 'YOUR_SECRET_KEY'
+})
+
+# Fetch the current price of Bitcoin
+price = exchange.fetch_ticker('BTC/USD')['last']
+
+# Set the amount to buy/sell
+amount = 0.1
+
+# Set the maximum % change
+max_change = 0.05
+
+# Set the trading interval
+interval = 10
+
+# Set the initial order type
+order_type = 'buy'
+
+while True:
+    # Fetch the current price
+    current_price = exchange.fetch_ticker('BTC/USD')['last']
+
+    # Calculate the change since the last check
+    change = (current_price - price) / price
+
+    if order_type == 'buy' and change > max_change:
+        # Place a limit buy order
+        exchange.create_order('BTC/USD', 'limit', 'buy', amount, current_price)
+        order_type = 'sell'
+
+    elif order_type == 'sell' and change < -max_change:
+        # Place a limit sell order
+        exchange.create_order('BTC/USD', 'limit', 'sell', amount, current_price)
+        order_type = 'buy'
+
+    # Update the price
+    price = current_price
+
+    # Wait for the next interval
+    time.sleep(interval)
